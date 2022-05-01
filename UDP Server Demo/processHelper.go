@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"unsafe"
+
 	//	"log"
 
 	"github.com/TheTitanrain/w32"
@@ -55,4 +57,46 @@ func getModule(pid uint32, targetModuleName string) w32.MODULEENTRY32 {
 	}
 
 	return me
+}
+
+//code cave test
+func test(pid uint32) {
+	kernel32DLL := windows.NewLazySystemDLL("kernel32.dll")
+
+	WriteProcessMemory := kernel32DLL.NewProc("WriteProcessMemory")
+	VirtualAllocEx := kernel32DLL.NewProc("VirtualAllocEx")
+	VirtualProtectEx := kernel32DLL.NewProc("VirtualProtectEx")
+	// Get a handle on remote process
+	pHandle, errProc := windows.OpenProcess(windows.PROCESS_CREATE_THREAD|windows.PROCESS_VM_OPERATION|windows.PROCESS_VM_WRITE|windows.PROCESS_VM_READ|windows.PROCESS_QUERY_INFORMATION, false, pid)
+	if errProc != nil {
+		fmt.Println("Open Process Error")
+	}
+
+	buf := []byte("Code Cave is here!")
+
+	// Get a pointer to the cave of code carved out in the remote process
+	pRemoteCode, _, errVirtualAlloc := VirtualAllocEx.Call(uintptr(pHandle), 0, uintptr(len(buf)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
+	if errVirtualAlloc != nil && errVirtualAlloc.Error() != "The operation completed successfully." {
+		fmt.Println("Virtual Alloc Error")
+	}
+
+	// Write the payload into the code cave
+	_, _, errWriteProcessMemory := WriteProcessMemory.Call(uintptr(pHandle), pRemoteCode, (uintptr)(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+
+	if errWriteProcessMemory != nil && errWriteProcessMemory.Error() != "The operation completed successfully." {
+		fmt.Println("Write Process Error")
+	}
+
+	oldProtect := windows.PAGE_READWRITE
+	_, _, errVirtualProtectEx := VirtualProtectEx.Call(uintptr(pHandle), pRemoteCode, uintptr(len(buf)), windows.PAGE_EXECUTE_READ, uintptr(unsafe.Pointer(&oldProtect)))
+	if errVirtualProtectEx != nil && errVirtualProtectEx.Error() != "The operation completed successfully." {
+		fmt.Println("Virtual Protect Error")
+	}
+
+	errCloseHandle := windows.CloseHandle(pHandle)
+	if errCloseHandle != nil {
+		fmt.Println("Close Handle Error")
+
+	}
+
 }
