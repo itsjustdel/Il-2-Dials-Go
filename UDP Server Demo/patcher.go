@@ -1,18 +1,13 @@
 package main
 
-import "fmt"
+const PROCESS_ALL_ACCESS = 0x1F0FFF
 
 func patcher() {
 
-	pid, e := getProcessID("pservice.exe")
+	pid, e := getProcessID("Il-2.exe")
 	if e != nil {
-		panic(e)
+		return
 	}
 
-	fmt.Println("PID: ", pid)
-
-	// if (hProcessIL2 == 0)
-	// 	return false;
-
-	getModule(pid)
+	rseModule := getModule(pid, "RSE.dll")
 }

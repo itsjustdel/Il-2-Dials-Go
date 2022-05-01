@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	fyne.io/fyne/v2 v2.1.4
-	github.com/Andoryuuta/kiwi v0.0.0-20200827010936-214591e6213d
+	github.com/TheTitanrain/w32 v0.0.0-20200114052255-2654d97dbd3d
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 )
 

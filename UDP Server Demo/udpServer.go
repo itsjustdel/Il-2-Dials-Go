@@ -60,7 +60,7 @@ func UDPServer(serverStarted chan bool) {
 	//same as while == true
 	for {
 
-		if <-serverStarted == false {
+		if !<-serverStarted {
 			continue
 		}
 
