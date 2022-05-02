@@ -13,11 +13,12 @@ func patcher() {
 		return
 	}
 
-	//rseModule := getModule(pid, "RSE.dll")
+	rseModule := getModule(pid, "RSE.dll")
 	//not dry
 	snapshot := w32.CreateToolhelp32Snapshot(w32.TH32CS_SNAPMODULE, pid)
 	defer w32.CloseHandle(snapshot)
 
-	test(pid)
+	//test(pid)
+	functionInDLL(pid, rseModule)
 
 }
